@@ -1,0 +1,56 @@
+/////////////
+Client to Server
+size : x
+session id : NULL
+state : NULL
+////////////
+
+///////////
+Server to Client
+size : x
+state : accesspage
+message :   "1 : SignIn\n
+             2 : SignUp"
+///////////
+
+//////////
+Client to Server
+size : x
+session id : NULL
+state : accesspage
+request : 2
+//////////
+
+//////////
+Server to Client
+size : x
+state : signup
+message : "Enter your signup details"
+form : "Name\nGender\nPassword\nBday\n"
+//////////
+
+//////////
+Client to Server
+size : x
+state : SignUp
+form : "mihir\nM\nb4u\n30-11-1999"
+//////////
+
+//////////
+Server to Client
+size : x
+state : home
+session id : y
+message : "Welcome\n
+            details
+            Friends : 1
+            Posts   : 2
+            message : 3
+            Online  : 4
+            Search  : 5"
+/////////
+
+
+
+
+
