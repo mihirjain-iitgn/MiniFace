@@ -4,10 +4,10 @@ port = 12345
 buffersize = 1024
 
 class Handle:
-    def __init__(self,message, client):
+    def __init__(self,message):
         args = message.split("\n")   
         args.pop(-1)
-        self.client = client
+        # self.client = client
         self.Fields_Req = {"sessionid":"None","state":"None","message":"None","form":[]}
         self.Fields_Res = {"sessionid":"None","state":"None","request":"None","form":[]}
         self.ExtractFields(args)
@@ -26,20 +26,22 @@ class Handle:
     def printMessage(self):
         print(self.Fields_Req["message"])
     
-    def decide_request(self):
-        if (self.Fields_Req["sessionid"]=="None" and self.Fields_Req["state"]=="None"):
-            self.Fields_Res["state"] = "acesspage"
-            self.Fields_Res["message"] = "1: SignIn\n2: SignUp"
+    def decide_request(self, user_input):
+        if (self.Fields_Req["sessionid"]!="None"):
+            self.Fields_Res["sessionid"] = self.Fields_Req["sessionid"]
+        self.Fields_Res["request"] = user_input
+        self.Fields_Res["state"] = self.Fields_Req["state"]
     
-    def SendMessage(self):
-        self.decide_request()
+    def SendMessage(self, user_input, server):
+        self.decide_request(user_input)
         msg_client = ""
         for key in self.Fields_Res:
-            val = self.Fields_Req[key]
-            msg_client += (key + ":" + val + "\n")
+            val = self.Fields_Res[key]
+            if (val):
+                msg_client += (key + ":" + val + "\n")
         size = len(msg_client)
         msg_client = str(size) + "\n" + msg_client
-        self.client.send(msg_client.encode())
+        server.send(msg_client.encode())
 
 def handleReq(s):
     buffer = ""
@@ -52,13 +54,23 @@ def handleReq(s):
     buffer = ""
     while size>len(buffer):
         buffer = buffer + s.recv(buffersize).decode()
-    request = Handle(buffer,s)
-    request.printMessage()
+    return buffer
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(('127.0.0.1', port))
-
 msg_server = "sessionid:None\nstate:None\n"
 msg_server = str(len(msg_server)) + "\n" + msg_server
 s.send(msg_server.encode())
-handleReq(s)
+buffer = handleReq(s)
+while(1):
+    request = Handle(buffer)
+    request.printMessage()
+    s.close()
+    user_input = input().rstrip()
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect(('127.0.0.1', port))
+    request.SendMessage(user_input,s)
+    buffer = handleReq(s)
+
+
+    

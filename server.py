@@ -11,7 +11,6 @@ socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 socket.bind((host, port))
 socket.listen(max_connection_queue)
 
-
 class Handle:
     def __init__(self,message, client):
         args = message.split("\n")   
@@ -33,9 +32,20 @@ class Handle:
             self.Fields_Req[key] = value
     
     def decide_request(self):
-        if (self.Fields_Req["sessionid"]=="None" and self.Fields_Req["state"]=="None"):
-            self.Fields_Res["state"] = "acesspage"
-            self.Fields_Res["message"] = "1->SignIn\n2->SignUp"
+        if (self.Fields_Req["sessionid"] == "None"):
+            if (self.Fields_Req["state"] == "None"):
+                self.Fields_Res["state"] = "acesspage"
+                self.Fields_Res["message"] = "1 - SignIn\t2 - SignUp"
+            if (self.Fields_Req["state"] == "acesspage"):
+                if (self.Fields_Req["request"] == "1"):
+                    print("")
+                elif (self.Fields_Req["request"] == "2"):
+                    self.Fields_Res["state"] = "signup"
+                    self.Fields_Res["message"] = "Fill the following details" 
+                else:
+                    print("")
+                    # TO DO
+        
     
     def SendMessage(self):
         self.decide_request()
@@ -46,7 +56,6 @@ class Handle:
                 msg_client += (key + ":" + val + "\n")
         size = len(msg_client)
         msg_client = str(size) + "\n" + msg_client
-        print(msg_client)
         self.client.send(msg_client.encode())
 
 def handleReq(client):
