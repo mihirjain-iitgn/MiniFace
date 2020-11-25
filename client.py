@@ -8,8 +8,8 @@ class Handle:
         args = message.split("\n")   
         args.pop(-1)
         # self.client = client
-        self.Fields_Req = {"sessionid":"None","state":"None","message":"None","form":[]}
-        self.Fields_Res = {"sessionid":"None","state":"None","request":"None","form":[]}
+        self.Fields_Req = {"sessionid":"None","state":"None","message":"None","form":"None"}
+        self.Fields_Res = {"sessionid":"None","state":"None","request":"None","form":"None"}
         self.ExtractFields(args)
 
     def splitField(self,entry):
@@ -20,24 +20,36 @@ class Handle:
         for entry in args:
             key, value = self.splitField(entry)
             if key=="form":
-                value = value.split("\n")
+                value = value.split("$")
             self.Fields_Req[key] = value
     
     def printMessage(self):
-        print(self.Fields_Req["message"])
-    
-    def decide_request(self, user_input):
+        mes = self.Fields_Req["message"].replace("@","\n")
+        print("\033c")
+        print(mes)
+    def decide_request(self):
+        if (self.Fields_Req["form"]!="None"):
+            details = ""
+            for i in self.Fields_Req["form"]:
+                print(i,":", end="")
+                ipt =  str(input()).strip()
+                while(ipt=="None"):
+                    print("Choose another",i)
+                    ipt =  str(input()).strip()
+                details = details + ipt + "$"
+            self.Fields_Res["form"] = details
+        else:
+            self.Fields_Res["request"] = input().strip()
         if (self.Fields_Req["sessionid"]!="None"):
             self.Fields_Res["sessionid"] = self.Fields_Req["sessionid"]
-        self.Fields_Res["request"] = user_input
         self.Fields_Res["state"] = self.Fields_Req["state"]
     
-    def SendMessage(self, user_input, server):
-        self.decide_request(user_input)
+    def SendMessage(self, server):
+        self.decide_request()
         msg_client = ""
         for key in self.Fields_Res:
             val = self.Fields_Res[key]
-            if (val):
+            if (val!="None" or key=="sessionid"):
                 msg_client += (key + ":" + val + "\n")
         size = len(msg_client)
         msg_client = str(size) + "\n" + msg_client
@@ -66,11 +78,8 @@ while(1):
     request = Handle(buffer)
     request.printMessage()
     s.close()
-    user_input = input().rstrip()
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(('127.0.0.1', port))
-    request.SendMessage(user_input,s)
+    request.SendMessage(s)
+
     buffer = handleReq(s)
-
-
-    

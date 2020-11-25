@@ -1,0 +1,57 @@
+Bytessize:
+SessionId : 2
+1
+server
+server
+    Login : 1
+    Sign Up : 2
+ client
+    1 ,2
+Bytessize:
+SessionId : NULL
+....
+posts : 1
+friends : 2
+username : SessionId
+username : state
+mihirjain : 1
+mihirjain : home
+thread-per-connection
+client : connect
+
+size
+SessionId : NULL
+
+Login : 1
+SignUp : 2
+
+1
+size
+SessionId : NULL
+1
+username
+password
+
+1
+SessionId : NULL
+3
+mihirjain
+3rbf3u
+size
+SessionId : 1
+Welcome mihirjain
+1 : posts
+2 : friends
+username
+mihir,pass, byubj, sessionid, online
+friends
+kisne bheji, kisko bheji, status, online
+mihir, priyam, 1, 1
+list or offline
+chintu
+
+
+
+
+
+
