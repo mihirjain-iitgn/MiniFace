@@ -2,6 +2,7 @@ import socket
 
 port = 12345
 buffersize = 1024
+ssid = "None"
 
 class Handle:
     def __init__(self,message):
@@ -11,6 +12,7 @@ class Handle:
         self.Fields_Req = {"sessionid":"None","state":"None","message":"None","form":"None"}
         self.Fields_Res = {"sessionid":"None","state":"None","request":"None","form":"None"}
         self.ExtractFields(args)
+        
 
     def splitField(self,entry):
         entry1, entry2 = entry.split(":")
@@ -24,10 +26,11 @@ class Handle:
             self.Fields_Req[key] = value
     
     def printMessage(self):
-        mes = self.Fields_Req["message"].replace("@","\n")
-        print("\033c")
+        mes = self.Fields_Req["message"].replace("\t","\n")
+        # print("\033c")
         print(mes)
     def decide_request(self):
+        global ssid
         if (self.Fields_Req["form"]!="None"):
             details = ""
             for i in self.Fields_Req["form"]:
@@ -41,19 +44,21 @@ class Handle:
         else:
             self.Fields_Res["request"] = input().strip()
         if (self.Fields_Req["sessionid"]!="None"):
-            self.Fields_Res["sessionid"] = self.Fields_Req["sessionid"]
+            ssid = self.Fields_Req["sessionid"]
+        self.Fields_Res["sessionid"] = ssid
         self.Fields_Res["state"] = self.Fields_Req["state"]
     
     def SendMessage(self, server):
         self.decide_request()
-        msg_client = ""
+        msg_server = ""
         for key in self.Fields_Res:
             val = self.Fields_Res[key]
             if (val!="None" or key=="sessionid"):
-                msg_client += (key + ":" + val + "\n")
-        size = len(msg_client)
-        msg_client = str(size) + "\n" + msg_client
-        server.send(msg_client.encode())
+                msg_server += (key + ":" + val + "\n")
+        size = len(msg_server)
+        msg_server = str(size) + "\n" + msg_server
+        print(msg_server)
+        server.send(msg_server.encode())
 
 def handleReq(s):
     buffer = ""
@@ -81,5 +86,4 @@ while(1):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(('127.0.0.1', port))
     request.SendMessage(s)
-
     buffer = handleReq(s)

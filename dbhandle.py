@@ -20,17 +20,17 @@ def user_table():
     connection.close()
     return True
 
-# def session_table():
-#     connection = sqlite3.connect('./users.sqlite3')
-#     crsr = connection.cursor() 
-#     sql_command = """CREATE TABLE session_details (
-#     username,
-#     sessionid,
-#     online);"""
-#     crsr.execute(sql_command) 
-#     connection.commit()  
-#     connection.close()
-#     return True
+def friends_table():
+    connection = sqlite3.connect('./users.sqlite3')
+    crsr = connection.cursor() 
+    sql_command = """CREATE TABLE friends (
+    P1,
+    P2,
+    status);"""
+    crsr.execute(sql_command) 
+    connection.commit()  
+    connection.close()
+    return True
 
 def save_details(table,details):
 
@@ -59,13 +59,9 @@ def save_details(table,details):
 
 def fetch_details(name):
     name = "'" + name + "'"
-    # connect withe the myTable database 
     connection = sqlite3.connect("./users.sqlite3") 
-
-    # cursor object 
     crsr = connection.cursor() 
     cmd = "SELECT * FROM user_details WHERE username=" + name
-    # execute the command to fetch all the data from the table emp 
     crsr.execute(cmd) 
 
     # store all the fetched data in the ans variable 
@@ -76,26 +72,40 @@ def fetch_details(name):
     # print(ans)
     return ans
 
-def profile_details(sesid):
-    sesid = "'" + sesid + "'"
-    # connect withe the myTable database 
+def friends_details(p1,p2,name,status):
+    name = "'" + name + "'"
+    status = "'" + status + "'" 
     connection = sqlite3.connect("./users.sqlite3") 
-
-    # cursor object 
     crsr = connection.cursor() 
-    print(sesid)
-    cmd = "SELECT * FROM user_details WHERE sessionid=" + sesid
-    # execute the command to fetch all the data from the table emp 
+    cmd = "SELECT "+ p1 +" FROM friends WHERE " + p2 +"=" +name + " AND status="+status
     crsr.execute(cmd) 
+    ans = crsr.fetchall()
+    # SELECT friend2 FROM friends WHERE friend1 = chintu AND status = "1"
+    # SELECT friend1 FROM friends WHERE friend2 = chintu AND status = "1"
+    # SELECT friend1 FROM friends WHERE friend2 = chintu AND status = 0
+    # SELECT friend2 FROM friends WHERE friend1 = chintu AND status = 0
+    flist = []
+    if(ans!=[]):
+        for i in ans:
+            flist.append(i[0])
 
-    # store all the fetched data in the ans variable
-     
+    print(flist)
+    return flist
+
+
+def profile_details(ssid):
+    ssid = "'" + ssid + "'" 
+    connection = sqlite3.connect("./users.sqlite3") 
+    crsr = connection.cursor() 
+    # print(ssid)
+    cmd = "SELECT * FROM user_details WHERE sessionid=" + ssid 
+    crsr.execute(cmd) 
     ans = crsr.fetchone()
     if(ans!=None):
         ans = list(ans)
         ans.pop(1)
         ans = ans[:len(ans)-2]
-    print(ans)
+    # print(ans)
     return ans
 
 def update_details(username,ssid,online):
@@ -110,9 +120,32 @@ def update_details(username,ssid,online):
     connection.commit()
     connection.close()
 
+def accept_req(P1,P2):
+    connection = sqlite3.connect("./users.sqlite3") 
+    crsr = connection.cursor()
+    P1 = "'" + P1 + "'"
+    P2 = "'" + P2 + "'"
+    cmd = "UPDATE friends SET status='1' WHERE P1="+P1 + " AND P2="+P2
+    crsr.execute(cmd) 
+
+    connection.commit()
+    connection.close()
+
+def delete_req(P1,P2):
+    connection = sqlite3.connect("./users.sqlite3") 
+    crsr = connection.cursor()
+    P1 = "'" + P1 + "'"
+    P2 = "'" + P2 + "'"
+    cmd = "DELETE from friends WHERE P1="+P1 + " AND P2="+P2
+    crsr.execute(cmd) 
+
+    connection.commit()
+    connection.close()
 # user_table()
+# friends_table()
 # save_details("user_details",["Priy","kavjk","M","may","2790y08","1"])
-# print(fetch_details("Priy"))
+# save_details("friends",["mihir","priyam","0"])
+# print(friends_details("P1","P2","priyam","0"))
 # update_details("Priy","nvaknajjb","0")
 # print(fetch_details("Priy"))
 # profile_details("Priy")
