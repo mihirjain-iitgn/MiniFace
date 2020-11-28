@@ -32,6 +32,19 @@ def friends_table():
     connection.close()
     return True
 
+def posts_table():
+    connection = sqlite3.connect('./users.sqlite3')
+    crsr = connection.cursor() 
+    sql_command = """CREATE TABLE posts (
+    P,
+    scope,
+    time,
+    Post);"""
+    crsr.execute(sql_command) 
+    connection.commit()  
+    connection.close()
+    return True
+
 def save_details(table,details):
 
     # connecting to the database
@@ -56,6 +69,26 @@ def save_details(table,details):
     connection.close()
     return True
 
+def fetch_posts(name1,name2,status):
+    name1 = "'" + name1 + "'"
+    name2 = "'" + name2 + "'"
+    status = "'" + status + "'"
+    connection = sqlite3.connect("./users.sqlite3") 
+    crsr = connection.cursor() 
+    if(name1==name2):
+        cmd = "SELECT * FROM posts WHERE P=" + name2
+    else:
+        if(status=="'1'"):
+            cmd = "SELECT * FROM posts WHERE P=" + name2 + " AND scope!='2'"
+        else:
+            cmd = "SELECT * FROM posts WHERE P=" + name2 + " AND scope='0'"
+
+    
+    crsr.execute(cmd) 
+    ans = crsr.fetchall()
+    connection.close()
+    return ans
+
 
 def fetch_details(name):
     name = "'" + name + "'"
@@ -70,6 +103,7 @@ def fetch_details(name):
         ans = list(ans)
         # ans = ans[:len(ans)-2]
     # print(ans)
+    connection.close()
     return ans
 
 def friends_details(p1,p2,name,status):
@@ -90,7 +124,48 @@ def friends_details(p1,p2,name,status):
             flist.append(i[0])
 
     print(flist)
+    connection.close()
     return flist
+
+def check_friends(name1,name2):
+    name1 = "'" + name1 + "'"
+    name2 = "'" + name2 + "'"
+    connection = sqlite3.connect("./users.sqlite3") 
+    crsr = connection.cursor() 
+    cmd = "SELECT status FROM friends WHERE P1=" + name1 + " AND P2=" +name2
+    crsr.execute(cmd) 
+    ans = crsr.fetchall()
+    flist = []
+    if(ans!=[]):
+        for i in ans:
+            flist.append(i[0])
+    print(flist)
+    connection.close()
+    return flist
+
+# def mutual_friends(name1,name2):
+#     name1 = "'" + name1 + "'"
+#     name2 = "'" + name2 + "'"
+#     connection = sqlite3.connect("./users.sqlite3") 
+#     crsr = connection.cursor() 
+#     SELECT p.* 
+#     FROM 
+#         (
+#         SELECT P2 FROM friends WHERE P1=" + name1 + " AND status="'1'"
+#         UNION
+#         SELECT P1 FROM friends WHERE P2=" + name1 + " AND status="'1'"
+#         ) AS t1
+#         INNER JOIN
+#         (
+#         SELECT P2 FROM friends WHERE P1=" + name1 + " AND status="'1'"
+#         UNION
+#         SELECT P1 FROM friends WHERE P2=" + name1 + " AND status="'1'"
+#         ) AS t2
+#         ON t1 = t2
+
+#         JOIN profiles p on p.id=t1.friend_id
+#     cmd = "SELECT status FROM friends WHERE P1=" + name1 + " AND P2=" +name2
+
 
 
 def profile_details(ssid):
@@ -106,6 +181,7 @@ def profile_details(ssid):
         ans.pop(1)
         ans = ans[:len(ans)-2]
     # print(ans)
+    connection.close()
     return ans
 
 def update_details(username,ssid,online):
@@ -141,8 +217,21 @@ def delete_req(P1,P2):
 
     connection.commit()
     connection.close()
+
+def delete_post(user,post):
+    connection = sqlite3.connect("./users.sqlite3") 
+    crsr = connection.cursor()
+    user = "'" + user + "'"
+    post = "'" + post + "'"
+    cmd = "DELETE from posts WHERE P="+ user + " AND post="+post
+    crsr.execute(cmd) 
+
+    connection.commit()
+    connection.close()
+
 # user_table()
 # friends_table()
+# posts_table()
 # save_details("user_details",["Priy","kavjk","M","may","2790y08","1"])
 # save_details("friends",["mihir","priyam","0"])
 # print(friends_details("P1","P2","priyam","0"))

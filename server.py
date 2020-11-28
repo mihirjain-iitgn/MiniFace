@@ -2,6 +2,7 @@ import socket
 import threading
 from dbhandle import *
 import uuid
+import datetime
 
 port = 12345
 max_threads = 5
@@ -42,9 +43,7 @@ class Handle:
     def getUsername(self,ssid):
         return profile_details(ssid)[0]
 
-    def profile_other(self,username,details):
-        # sessionid = self.Fields_Req["sessionid"]
-        # print(details)
+    def profile_other(self,details):
         user = ['USERNAME','GENDER','AGE']
         reply = ""
         for i in range(3):
@@ -110,6 +109,11 @@ class Handle:
                 # Do something
                 print("Yeh print hora h")
         # state : profile@self
+        # 1. Friend
+        # 2. Search
+        # 3. Posts
+        # 4. See Message
+        # 5. Logout
         # state : profile@priyam
         # 1. Send Req
         # 2. Send Message
@@ -117,6 +121,7 @@ class Handle:
         # 4. See Mutual Friends
         # 5. Self
         else:
+            #user ki info nikaal le
             ssid = self.Fields_Req["sessionid"]
             if (self.checkid(ssid)==0):
                 print("yeh hora h kya print")
@@ -131,15 +136,45 @@ class Handle:
                             self.Fields_Res["state"] = "search"
                             self.Fields_Res["message"] = "Enter the Following"
                             self.Fields_Res["form"] = "Search by Username"
+                        elif (self.Fields_Req["request"]=="3"):
+                            self.Fields_Res["state"] = "posts@self"
+                            self.Fields_Res["message"] = "1. New Post\t2. See Posts\t3. Profile"
                         
                     else:
                         if(self.Fields_Req["request"]=="1"):
                             #check if friend hai ya nhi
-                            self.Fields_Res["state"] = "profile@self"
-                            self.profile(self.Fields_Req["sessionid"])
+                            self.Fields_Res["state"] = self.Fields_Req["state"]
+                            details = fetch_details(prof)
+                            self.profile_other(details)
                             user = self.getUsername(self.Fields_Req["sessionid"])
-                            print([user,prof,"0"])
-                            save_details("friends",[user,prof,"0"])
+                            check = check_friends(user,prof)                            
+                            if (not check):
+                                save_details("friends",[user,prof,"0"])
+                                self.Fields_Res["message"] += ("\tSent\t")
+                            elif(check == ["0"]):
+                                self.Fields_Res["message"] += ("\tAlready Sent\t")
+                            else:
+                                self.Fields_Res["message"] +=("\tAlready Friends\t")
+                        elif(self.Fields_Req["request"]=="3"):
+                            user = self.getUsername(self.Fields_Req["sessionid"])
+                            if (check_friends(user, prof) or check_friends(prof, user)):
+                                posts = fetch_posts(user, prof,"1")
+                            else:
+                                posts = fetch_posts(user, prof,"0") 
+                            self.Fields_Res["message"] = "1.Back to Profile\t"
+                            self.Fields_Res["form"] = "Action"
+                            self.Fields_Res["state"] = "backprof"
+                            for i in range(len(posts)):
+                                self.Fields_Res["message"] += ("Number- "+str(i+1)+"\tScope- "+posts[i][1]+"\tTime- "+posts[i][2]+"\tPost- "+posts[i][3]+"\t")
+                        elif(self.Fields_Req["request"]=="4"):
+                            user = self.getUsername(self.Fields_Req["sessionid"])
+                            friends = []
+                            friends.extend(friends_details("P2","P1",user,"1"))
+                            friends.extend(friends_details("P1","P2",user,"1"))                            
+                            # https://www.w3schools.com/sql/sql_join.asp
+                            # https://stackoverflow.com/questions/14529454/mutual-friends-sql-algorithm
+
+                                
 
                 elif (self.Fields_Req["state"]=="search"):
                     username = self.Fields_Req["form"][0]
@@ -150,7 +185,8 @@ class Handle:
                         self.Fields_Res["form"] = "Search by Username"
                     else:
                         self.Fields_Res["state"] = "profile@" + username
-                        self.profile_other(username, details)
+                        self.profile_other(details)
+            
                 elif (self.Fields_Req["state"]=="friends"):
                     username = self.getUsername(self.Fields_Req["sessionid"])
                     friends = []
@@ -173,15 +209,79 @@ class Handle:
                     self.Fields_Res["message"] += "\t".join(list(friends))
 
                 elif (self.Fields_Req["state"]=="Friendlist"):
-                    print("")
+                    username = self.Fields_Req["form"][0]
+                    details = fetch_details(username)
+                    self.Fields_Res["state"] = "profile@" + username
+                    self.profile_other(details)
                 elif (self.Fields_Req["state"]=="FriendReq"):
                     fname,action = self.Fields_Req["form"]
                     user = self.getUsername(self.Fields_Req["sessionid"])
                     if(action=="1"):
+                        #####same time accept delete
                         accept_req(fname, user)
-                    else:
+                        self.profile_other(fetch_details(fname))
+                        self.Fields_Res["state"] = "profile@"+fname
+                    elif(action=="0"):
+                        #####same time accept delete
                         delete_req(fname, user)
+                        self.profile(self.Fields_Req["sessionid"])
+                        self.Fields_Res["state"] = "profile@self"
+                    else:
+                        self.profile(self.Fields_Req["sessionid"])
+                        self.Fields_Res["state"] = "profile@self"
+                elif (self.Fields_Req["state"]=="PendReq"):
+                    fname,action = self.Fields_Req["form"]
+                    user = self.getUsername(self.Fields_Req["sessionid"])
+                    if(action=="1"):
+                        self.profile_other(fetch_details(fname))
+                        self.Fields_Res["state"] = "profile@"+fname
+                    else:
+                        delete_req(user, fname)
+                        self.profile(self.Fields_Req["sessionid"])
+                        self.Fields_Res["state"] = "profile@self"
+                        
+                elif (self.Fields_Req["state"]=="posts@self"):
+                    prof = self.Fields_Req["state"].split("@")[1]
+                    if (self.Fields_Req["request"]=="1"):
+                        self.Fields_Res["state"] = "newpost"
+                        self.Fields_Res["message"]  = "Fill The Following\t Scope 0 --> Public, 1 --> Friends, 2--> Private"
+                        self.Fields_Res["form"]  = "Post$Scope"
+                    elif (self.Fields_Req["request"]=="2"):
+                        self.Fields_Res["state"] = "seepostform"
+                        user  = self.getUsername(self.Fields_Req["sessionid"])
+                        posts = fetch_posts(user,user,"1")
+                        self.Fields_Res["message"] = "0.Delete\t1.Back to Profile\t"
+                        self.Fields_Res["form"] = "Post Number$Action"
+                        for i in range(len(posts)):
+                            self.Fields_Res["message"] += ("Number- "+str(i+1)+"\tScope- "+posts[i][1]+"\tTime- "+posts[i][2]+"\tPost- "+posts[i][3]+"\t")
+                    elif (self.Fields_Req["request"]=="3"):
+                        self.Fields_Res["state"] = "profile@self"
+                        self.profile(self.Fields_Req["sessionid"])
+                    else:
+                        print("")
+                elif (self.Fields_Req["state"]=="newpost"):
+                    self.Fields_Res["state"] = "profile@self"
+                    post,scope = self.Fields_Req["form"]
+                    user  = self.getUsername(self.Fields_Req["sessionid"])
+                    tame = str(datetime.datetime.now())
+                    tame = tame.replace(":","|")
+                    save_details("posts",[user,scope,tame,post])
+                    self.profile(self.Fields_Req["sessionid"])                    
+                elif (self.Fields_Req["state"]=="seepostform"):
+                    if(self.Fields_Req["form"][1]=="0"):
+                        user = self.getUsername(self.Fields_Req["sessionid"])
+                        posts = fetch_posts(user,user,"1")
+                        post = posts[int(self.Fields_Req["form"][0])-1][3]
+                        delete_post(user,post)
+                    self.Fields_Res["state"] = "profile@self"
+                    self.profile(self.Fields_Req["sessionid"])
 
+                elif (self.Fields_Req["state"]=="backprof"):
+                    if(self.Fields_Req["form"][0]=="1"):
+                        self.Fields_Res["state"] = "profile@self"
+                        self.profile(self.Fields_Req["sessionid"])
+                    else:
+                        print("")
     def SendMessage(self):
         self.decide_request()
         msg_client = ""

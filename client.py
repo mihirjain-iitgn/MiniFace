@@ -42,7 +42,7 @@ class Handle:
                 details = details + ipt + "$"
             self.Fields_Res["form"] = details
         else:
-            self.Fields_Res["request"] = input().strip()
+            self.Fields_Res["request"] = str(input()).strip()
         if (self.Fields_Req["sessionid"]!="None"):
             ssid = self.Fields_Req["sessionid"]
         self.Fields_Res["sessionid"] = ssid
