@@ -139,7 +139,8 @@ class Handle:
                 self.Fields_Res["message"] = "Invalid User.\t1:SignIn\t2:SignUp"
             else:
                 ##Valid User Authentication
-                
+                if self.Fields_Req["state"]=="None":
+                    self.Fields_Req["state"] = "profile@self"
                 if self.Fields_Req["state"][:7]=="profile":
                     ##Profile
                     prof = self.Fields_Req["state"].split("@")[1]
@@ -523,6 +524,7 @@ class Handle:
                 msg_client += (key + "(:)" + val + "\n")
         size = len(msg_client)
         msg_client = str(size) + "\n" + msg_client
+        print(msg_client)
         self.client.send(msg_client.encode())
 
 def handleReq(client):

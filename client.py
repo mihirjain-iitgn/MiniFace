@@ -1,11 +1,28 @@
 import socket
 import stdiomask
 import os
+import atexit
+
+
 port = 12346
 buffersize = 1024
 
-ssid = "None"
-# dekhna h ki file me h kya kuch
+path = "./test.txt"
+fd = open(path, "r")
+
+ssid = fd.readline()
+
+fd.close()
+
+def exit_handler():
+    global ssid
+    print(ssid)
+    fd = open(path, "w")
+    fd.write(ssid)
+    fd.close()
+
+atexit.register(exit_handler)
+
 
 
 class Handle:
@@ -30,11 +47,18 @@ class Handle:
     def printMessage(self):
         mes = self.Fields_Req["message"].replace("\t","\n")
         if (mes):
-            os.system('clear')
+            # os.system('clear')
             print(mes)
 
     def decide_request(self):
         global ssid
+        if (self.Fields_Req["sessionid"]!="None"):
+            ssid = self.Fields_Req["sessionid"]
+            if (ssid == "SetNone"):
+                ssid = "None"
+        self.Fields_Res["sessionid"] = ssid
+        self.Fields_Res["state"] = self.Fields_Req["state"]
+        
         if(self.Fields_Req["form"][0]):
             if (self.Fields_Req["form"]!="None"):
                 details = ""
@@ -51,13 +75,8 @@ class Handle:
                 self.Fields_Res["form"] = details
             else:
                 self.Fields_Res["request"] = str(input()).strip()
-        if (self.Fields_Req["sessionid"]!="None"):
-            ssid = self.Fields_Req["sessionid"]
-            if (ssid == "SetNone"):
-                ssid = "None"
-        self.Fields_Res["sessionid"] = ssid
-        self.Fields_Res["state"] = self.Fields_Req["state"]
-    
+        
+       
     def SendMessage(self, server):
         self.decide_request()
         msg_server = ""
@@ -85,7 +104,7 @@ def handleReq(s):
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(('127.0.0.1', port))
-msg_server = "sessionid(:)None\nstate(:)None\n"
+msg_server = "sessionid(:)"+ssid+"\nstate(:)None\n"
 msg_server = str(len(msg_server)) + "\n" + msg_server
 s.send(msg_server.encode())
 buffer = handleReq(s)
