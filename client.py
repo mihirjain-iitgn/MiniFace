@@ -1,21 +1,23 @@
 import socket
-
-port = 12345
+import stdiomask
+import os
+port = 12346
 buffersize = 1024
+
 ssid = "None"
+# dekhna h ki file me h kya kuch
+
 
 class Handle:
     def __init__(self,message):
         args = message.split("\n")   
         args.pop(-1)
-        # self.client = client
         self.Fields_Req = {"sessionid":"None","state":"None","message":"None","form":"None"}
         self.Fields_Res = {"sessionid":"None","state":"None","request":"None","form":"None"}
         self.ExtractFields(args)
-        
 
     def splitField(self,entry):
-        entry1, entry2 = entry.split(":")
+        entry1, entry2 = entry.split("(:)")
         return (entry1,entry2)
         
     def ExtractFields(self,args):
@@ -27,24 +29,32 @@ class Handle:
     
     def printMessage(self):
         mes = self.Fields_Req["message"].replace("\t","\n")
-        # print("\033c")
-        print(mes)
+        if (mes):
+            os.system('clear')
+            print(mes)
+
     def decide_request(self):
         global ssid
-        if (self.Fields_Req["form"]!="None"):
-            details = ""
-            for i in self.Fields_Req["form"]:
-                print(i,":", end="")
-                ipt =  str(input()).strip()
-                while(ipt=="None"):
-                    print("Choose another",i)
-                    ipt =  str(input()).strip()
-                details = details + ipt + "$"
-            self.Fields_Res["form"] = details
-        else:
-            self.Fields_Res["request"] = str(input()).strip()
+        if(self.Fields_Req["form"][0]):
+            if (self.Fields_Req["form"]!="None"):
+                details = ""
+                for i in self.Fields_Req["form"]:
+                    if (i!="Password"):
+                        print(i,":", end="")
+                        ipt =  str(input()).strip()
+                    else:
+                        ipt = stdiomask.getpass(mask='*')
+                    while(ipt=="None"):
+                        print("Choose another",i)
+                        ipt =  str(input()).strip()
+                    details = details + ipt + "$"
+                self.Fields_Res["form"] = details
+            else:
+                self.Fields_Res["request"] = str(input()).strip()
         if (self.Fields_Req["sessionid"]!="None"):
             ssid = self.Fields_Req["sessionid"]
+            if (ssid == "SetNone"):
+                ssid = "None"
         self.Fields_Res["sessionid"] = ssid
         self.Fields_Res["state"] = self.Fields_Req["state"]
     
@@ -54,7 +64,7 @@ class Handle:
         for key in self.Fields_Res:
             val = self.Fields_Res[key]
             if (val!="None" or key=="sessionid"):
-                msg_server += (key + ":" + val + "\n")
+                msg_server += (key + "(:)" + val + "\n")
         size = len(msg_server)
         msg_server = str(size) + "\n" + msg_server
         print(msg_server)
@@ -75,10 +85,11 @@ def handleReq(s):
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(('127.0.0.1', port))
-msg_server = "sessionid:None\nstate:None\n"
+msg_server = "sessionid(:)None\nstate(:)None\n"
 msg_server = str(len(msg_server)) + "\n" + msg_server
 s.send(msg_server.encode())
 buffer = handleReq(s)
+
 while(1):
     request = Handle(buffer)
     request.printMessage()

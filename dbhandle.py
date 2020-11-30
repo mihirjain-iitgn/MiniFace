@@ -1,12 +1,10 @@
 import sqlite3
-from os.path import isfile
 import os
 
 DEFAULT_PATH = './users.sqlite3'
 
-
 def user_table():
-    connection = sqlite3.connect('./users.sqlite3')
+    connection = sqlite3.connect(DEFAULT_PATH)
     crsr = connection.cursor() 
     sql_command = """CREATE TABLE user_details (
     username,
@@ -21,7 +19,7 @@ def user_table():
     return True
 
 def friends_table():
-    connection = sqlite3.connect('./users.sqlite3')
+    connection = sqlite3.connect(DEFAULT_PATH)
     crsr = connection.cursor() 
     sql_command = """CREATE TABLE friends (
     P1,
@@ -33,7 +31,7 @@ def friends_table():
     return True
 
 def posts_table():
-    connection = sqlite3.connect('./users.sqlite3')
+    connection = sqlite3.connect(DEFAULT_PATH)
     crsr = connection.cursor() 
     sql_command = """CREATE TABLE posts (
     P,
@@ -45,14 +43,27 @@ def posts_table():
     connection.close()
     return True
 
+def message_table():
+    connection = sqlite3.connect(DEFAULT_PATH)
+    crsr = connection.cursor() 
+    sql_command = """CREATE TABLE messages (
+    P1,
+    P2,
+    f1,
+    f2,
+    time,
+    status,
+    message
+    );"""
+    crsr.execute(sql_command) 
+    connection.commit()  
+    connection.close()
+    return True
+
 def save_details(table,details):
 
     # connecting to the database
-    if isfile(DEFAULT_PATH):
-        connection = sqlite3.connect("./users.sqlite3") 
-    else:
-        connection = sqlite3.connect("./users.sqlite3")
-    # cursor 
+    connection = sqlite3.connect(DEFAULT_PATH)
     crsr = connection.cursor()  
     # SQL command to insert the data in the table  
     val = "("
@@ -69,11 +80,12 @@ def save_details(table,details):
     connection.close()
     return True
 
+
 def fetch_posts(name1,name2,status):
     name1 = "'" + name1 + "'"
     name2 = "'" + name2 + "'"
     status = "'" + status + "'"
-    connection = sqlite3.connect("./users.sqlite3") 
+    connection = sqlite3.connect(DEFAULT_PATH)
     crsr = connection.cursor() 
     if(name1==name2):
         cmd = "SELECT * FROM posts WHERE P=" + name2
@@ -89,10 +101,22 @@ def fetch_posts(name1,name2,status):
     connection.close()
     return ans
 
+def online_users():
+    connection = sqlite3.connect(DEFAULT_PATH)
+    crsr = connection.cursor()
+    cmd = "SELECT username FROM user_details WHERE online='1'"
+    crsr.execute(cmd)
+    ans = crsr.fetchall()
+    for i in range(len(ans)):
+        ans[i] = list(ans[i])
+        ans[i] = ans[i][0]
+    connection.close()
+    print(ans)
+    return ans
 
 def fetch_details(name):
     name = "'" + name + "'"
-    connection = sqlite3.connect("./users.sqlite3") 
+    connection = sqlite3.connect(DEFAULT_PATH)
     crsr = connection.cursor() 
     cmd = "SELECT * FROM user_details WHERE username=" + name
     crsr.execute(cmd) 
@@ -109,28 +133,23 @@ def fetch_details(name):
 def friends_details(p1,p2,name,status):
     name = "'" + name + "'"
     status = "'" + status + "'" 
-    connection = sqlite3.connect("./users.sqlite3") 
+    connection = sqlite3.connect(DEFAULT_PATH)
     crsr = connection.cursor() 
     cmd = "SELECT "+ p1 +" FROM friends WHERE " + p2 +"=" +name + " AND status="+status
     crsr.execute(cmd) 
     ans = crsr.fetchall()
-    # SELECT friend2 FROM friends WHERE friend1 = chintu AND status = "1"
-    # SELECT friend1 FROM friends WHERE friend2 = chintu AND status = "1"
-    # SELECT friend1 FROM friends WHERE friend2 = chintu AND status = 0
-    # SELECT friend2 FROM friends WHERE friend1 = chintu AND status = 0
     flist = []
     if(ans!=[]):
         for i in ans:
             flist.append(i[0])
 
-    print(flist)
     connection.close()
     return flist
 
 def check_friends(name1,name2):
     name1 = "'" + name1 + "'"
     name2 = "'" + name2 + "'"
-    connection = sqlite3.connect("./users.sqlite3") 
+    connection = sqlite3.connect(DEFAULT_PATH)
     crsr = connection.cursor() 
     cmd = "SELECT status FROM friends WHERE P1=" + name1 + " AND P2=" +name2
     crsr.execute(cmd) 
@@ -139,38 +158,12 @@ def check_friends(name1,name2):
     if(ans!=[]):
         for i in ans:
             flist.append(i[0])
-    print(flist)
     connection.close()
     return flist
 
-# def mutual_friends(name1,name2):
-#     name1 = "'" + name1 + "'"
-#     name2 = "'" + name2 + "'"
-#     connection = sqlite3.connect("./users.sqlite3") 
-#     crsr = connection.cursor() 
-#     SELECT p.* 
-#     FROM 
-#         (
-#         SELECT P2 FROM friends WHERE P1=" + name1 + " AND status="'1'"
-#         UNION
-#         SELECT P1 FROM friends WHERE P2=" + name1 + " AND status="'1'"
-#         ) AS t1
-#         INNER JOIN
-#         (
-#         SELECT P2 FROM friends WHERE P1=" + name1 + " AND status="'1'"
-#         UNION
-#         SELECT P1 FROM friends WHERE P2=" + name1 + " AND status="'1'"
-#         ) AS t2
-#         ON t1 = t2
-
-#         JOIN profiles p on p.id=t1.friend_id
-#     cmd = "SELECT status FROM friends WHERE P1=" + name1 + " AND P2=" +name2
-
-
-
 def profile_details(ssid):
     ssid = "'" + ssid + "'" 
-    connection = sqlite3.connect("./users.sqlite3") 
+    connection = sqlite3.connect(DEFAULT_PATH)
     crsr = connection.cursor() 
     # print(ssid)
     cmd = "SELECT * FROM user_details WHERE sessionid=" + ssid 
@@ -185,7 +178,7 @@ def profile_details(ssid):
     return ans
 
 def update_details(username,ssid,online):
-    connection = sqlite3.connect("./users.sqlite3") 
+    connection = sqlite3.connect(DEFAULT_PATH)
     crsr = connection.cursor()
     username = "'" + username + "'"
     ssid = "'" + ssid + "'"
@@ -195,9 +188,23 @@ def update_details(username,ssid,online):
 
     connection.commit()
     connection.close()
+    return
+
+def update_chat(user1,user2,var,value):
+    user1 = "'" + user1 + "'"
+    user2 = "'" + user2 + "'"
+    value = "'" + value + "'"
+    connection = sqlite3.connect(DEFAULT_PATH)
+    crsr = connection.cursor() 
+    cmd = "UPDATE messages SET " + var + "=" + value + " WHERE P1=" + user1 + " AND P2=" + user2
+    crsr.execute(cmd) 
+
+    connection.commit()
+    connection.close()
+    return
 
 def accept_req(P1,P2):
-    connection = sqlite3.connect("./users.sqlite3") 
+    connection = sqlite3.connect(DEFAULT_PATH)
     crsr = connection.cursor()
     P1 = "'" + P1 + "'"
     P2 = "'" + P2 + "'"
@@ -206,9 +213,10 @@ def accept_req(P1,P2):
 
     connection.commit()
     connection.close()
+    return
 
 def delete_req(P1,P2):
-    connection = sqlite3.connect("./users.sqlite3") 
+    connection = sqlite3.connect(DEFAULT_PATH)
     crsr = connection.cursor()
     P1 = "'" + P1 + "'"
     P2 = "'" + P2 + "'"
@@ -217,9 +225,22 @@ def delete_req(P1,P2):
 
     connection.commit()
     connection.close()
+    return
+
+def delete_friend(P1,P2):
+    connection = sqlite3.connect(DEFAULT_PATH)
+    crsr = connection.cursor()
+    P1 = "'" + P1 + "'"
+    P2 = "'" + P2 + "'"
+    cmd = "DELETE from friends WHERE (P1="+P1 + " AND P2="+P2 + ") OR (P1="+P2 + " AND P2="+P1 + ")"
+    crsr.execute(cmd) 
+
+    connection.commit()
+    connection.close()
+    return
 
 def delete_post(user,post):
-    connection = sqlite3.connect("./users.sqlite3") 
+    connection = sqlite3.connect(DEFAULT_PATH)
     crsr = connection.cursor()
     user = "'" + user + "'"
     post = "'" + post + "'"
@@ -228,14 +249,47 @@ def delete_post(user,post):
 
     connection.commit()
     connection.close()
+    return
+
+def fetch_chats(user):
+    user = "'" + user + "'"
+    connection = sqlite3.connect(DEFAULT_PATH)
+    crsr = connection.cursor() 
+    # cmd = "SELECT P1 FROM messages WHERE status='1' AND P2=" + user
+    cmd = "SELECT P1,COUNT(*) FROM messages WHERE status='1' AND P2=" + user + " GROUP BY P1"
+    crsr.execute(cmd) 
+
+    # store all the fetched data in the ans variable 
+    ans = crsr.fetchall()
+    connection.close()
+    return ans
+
+def getMessages(user1,user2):
+    user1 = "'" + user1 + "'"
+    user2 = "'" + user2 + "'"
+    connection = sqlite3.connect(DEFAULT_PATH)
+    crsr = connection.cursor() 
+    # cmd = "SELECT P1 FROM messages WHERE status='1' AND P2=" + user
+    cmd = "SELECT P1,time,status,message FROM messages WHERE ( P1=" + user1 + "  AND P2=" + user2 + " AND f1='1' ) OR ( P1=" + user2 + "  AND P2=" + user1 + " AND f2='1' )"
+    crsr.execute(cmd) 
+
+    # store all the fetched data in the ans variable 
+    ans = crsr.fetchall()
+    connection.close()
+    return ans
+
 
 # user_table()
 # friends_table()
 # posts_table()
+# message_table()
 # save_details("user_details",["Priy","kavjk","M","may","2790y08","1"])
 # save_details("friends",["mihir","priyam","0"])
 # print(friends_details("P1","P2","priyam","0"))
 # update_details("Priy","nvaknajjb","0")
-# print(fetch_details("Priy"))
+# print(fetch_chats("mihir"))
 # profile_details("Priy")
 # [('save this is last for the day',), ('good morning priyam',)]
+# save_details("messages",["priy","profit","0","0","tame","0","msg"])
+# print(fetch_chats("profit"))
+# print(getMessages("a","mihir"))
