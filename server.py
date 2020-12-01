@@ -2,10 +2,11 @@ import socket
 import threading
 from dbhandle import *
 import uuid
+import sys
 import datetime
 
 port = 12346
-max_connection_queue = 10
+max_connection_queue = 100
 buffersize = 1024
 host = ""
 
@@ -101,9 +102,9 @@ class Handle:
                     self.profile(self.Fields_Res["sessionid"])
                 else:
                     ##Username Exists
-                    self.Fields_Res["state"] = "signup"
-                    self.Fields_Res["message"] = "Username is not avaliable. Try Again"
-                    self.Fields_Res["form"] = "Username$Password$Gender$Birthday"
+                    self.Fields_Res["state"] = "acesspage"
+                    self.Fields_Res["sessionid"] = "None"
+                    self.Fields_Res["message"] = "Username is not avaliable. Try Again!\tAction\t1:SignIn\t2:SignUp"
             elif (self.Fields_Req["state"] == "signin"):
                 ##SignIn
                 det = fetch_details(self.Fields_Req["form"][0])
@@ -164,10 +165,17 @@ class Handle:
                             self.Fields_Res["message"] = ""
                             self.Fields_Res["form"] = "Username$Action"
                             self.Fields_Res["state"] = "formmessage"
-                            chats = fetch_chats(self.getUsername(self.Fields_Req['sessionid']))
-                            for i in range(len(chats)):
-                                self.Fields_Res["message"] += (str(i+1) + ". "+ str(chats[i][0]) + " (" +str(chats[i][1]) + ")\t")
-                            self.Fields_Res["message"] += "Action\t1.Open\t2.Delete"
+                            readchats = fetch_readchats(self.getUsername(self.Fields_Req['sessionid']))
+                            unreadchats = fetch_unreadchats(self.getUsername(self.Fields_Req['sessionid']))
+                            print(readchats)
+                            print(unreadchats)
+                            for i in range(len(unreadchats)):
+                                self.Fields_Res["message"] += (str(i+1) + ". "+ str(unreadchats[i][0]) + " (" +str(unreadchats[i][1]) + ")\t")
+
+                            for i in range(len(readchats)):
+                                self.Fields_Res["message"] += (str(i+1) + ". "+ str(readchats[i]) + "\t")
+
+                            self.Fields_Res["message"] += "Action\t1.Open\t2.Delete\t3.Back to profile"
                         elif (self.Fields_Req["request"]=="5"):
                             ##Show Online Friends and Chat
                             online = set(online_users())
@@ -176,10 +184,10 @@ class Handle:
                             friends.extend(friends_details("P2","P1",username,"1"))
                             friends.extend(friends_details("P1","P2",username,"1"))
                             friends = set(friends)
-                            print(friends)
+                            # print(friends)
                             friends_online = online.intersection(friends)
                             friends_online = list(friends_online)
-                            print(friends_online)
+                            # print(friends_online)
                             temp = ""
                             for i in friends_online:
                                 temp += i + "\t"
@@ -524,7 +532,7 @@ class Handle:
                 msg_client += (key + "(:)" + val + "\n")
         size = len(msg_client)
         msg_client = str(size) + "\n" + msg_client
-        print(msg_client)
+        # print(msg_client)
         self.client.send(msg_client.encode())
 
 def handleReq(client):
@@ -542,13 +550,21 @@ def handleReq(client):
     request.SendMessage()
     request.client.close()
 
-socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-# socket.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,True)
-# socket.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEPORT,True)
-socket.bind((host, port))
-socket.listen(max_connection_queue)
+def main():
+    print("Server is Running...")
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+    # socket.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,True)
+    # socket.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEPORT,True)
+    sock.bind((host, port))
+    sock.listen(max_connection_queue)
 
-while True:
-    client, addr = socket.accept()
-    Thread = threading.Thread(target=handleReq, args=(client,))
-    Thread.start()
+    while True:
+        try:
+            client, addr = sock.accept()
+            Thread = threading.Thread(target=handleReq, args=(client,))
+            Thread.start()
+        except:
+            sock.close()
+            sys.exit(0)
+
+main()

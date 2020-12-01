@@ -1,5 +1,6 @@
 import sqlite3
 import os
+from os.path import isfile
 
 DEFAULT_PATH = './users.sqlite3'
 
@@ -9,8 +10,8 @@ def user_table():
     sql_command = """CREATE TABLE user_details (
     username,
     pwd,
-    Gender,
-    Age,
+    gender,
+    birthday,
     sessionid,
     online);"""
     crsr.execute(sql_command) 
@@ -251,17 +252,30 @@ def delete_post(user,post):
     connection.close()
     return
 
-def fetch_chats(user):
+def fetch_unreadchats(user):
     user = "'" + user + "'"
     connection = sqlite3.connect(DEFAULT_PATH)
     crsr = connection.cursor() 
     # cmd = "SELECT P1 FROM messages WHERE status='1' AND P2=" + user
-    cmd = "SELECT P1,COUNT(*) FROM messages WHERE status='1' AND P2=" + user + " GROUP BY P1"
+    cmd = "SELECT P1,COUNT(*) FROM messages WHERE status='1' AND f2='1' AND P2=" + user + " GROUP BY P1"
     crsr.execute(cmd) 
 
     # store all the fetched data in the ans variable 
     ans = crsr.fetchall()
     connection.close()
+    return ans
+
+def fetch_readchats(user):
+    user = "'" + user + "'"
+    connection = sqlite3.connect(DEFAULT_PATH)
+    crsr = connection.cursor() 
+    cmd = "SELECT P1 FROM messages WHERE status='1' AND f2='1' AND P2=" + user
+    crsr.execute(cmd) 
+
+    # store all the fetched data in the ans variable 
+    ans = crsr.fetchall()
+    connection.close()
+    ans = list(set(ans))
     return ans
 
 def getMessages(user1,user2):
@@ -278,11 +292,12 @@ def getMessages(user1,user2):
     connection.close()
     return ans
 
+if isfile(DEFAULT_PATH)==False:
+    user_table()
+    friends_table()
+    posts_table()
+    message_table()
 
-# user_table()
-# friends_table()
-# posts_table()
-# message_table()
 # save_details("user_details",["Priy","kavjk","M","may","2790y08","1"])
 # save_details("friends",["mihir","priyam","0"])
 # print(friends_details("P1","P2","priyam","0"))
@@ -291,5 +306,5 @@ def getMessages(user1,user2):
 # profile_details("Priy")
 # [('save this is last for the day',), ('good morning priyam',)]
 # save_details("messages",["priy","profit","0","0","tame","0","msg"])
-# print(fetch_chats("profit"))
+# print(fetch_unreadchats("a"))
 # print(getMessages("a","mihir"))
