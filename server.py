@@ -5,7 +5,7 @@ import uuid
 import sys
 import datetime
 
-port = 12346
+port = 12345
 max_connection_queue = 100
 buffersize = 1024
 host = ""
@@ -51,6 +51,7 @@ class Handle:
         ##Show Profile of other User
         user = ['USERNAME','GENDER','BIRTHDAY']
         reply = ""
+        details.pop(1)
         for i in range(3):
             reply+=(user[i]+" : "+details[i]+"\t")
         reply+=("1.Send Request\t2.Send Message\t3.See Posts\t4.See Friends\t5.Back to Profile")

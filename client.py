@@ -16,6 +16,7 @@ def exit_handler():
         fd = open(path, "w")
         fd.write(ssid)
         fd.close()
+        sys.exit(1)
 
 class Handle:
     def __init__(self,message):
@@ -122,12 +123,11 @@ def main():
 
 
 buffersize = 1024
-port = 12346
-host = "10.0.0.1"
+port = 12345
+host = "127.0.0.1"
 atexit.register(exit_handler)
 path = "./test.txt"
 fd = open(path, "r")
 ssid = fd.readline()
-ssid = "None"
 fd.close()
 main()
