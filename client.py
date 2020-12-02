@@ -9,7 +9,7 @@ def prYellow(skk): print("\033[93m {}\033[00m" .format(skk),":", end="")
 def exit_handler():
     if (ssid!="None"):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect(('127.0.0.1', port))
+        s.connect((host, port))
         msg_server = "sessionid(:)"+ssid+"\nstate(:)offline\n"
         msg_server = str(len(msg_server)) + "\n" + msg_server
         s.send(msg_server.encode())
@@ -105,7 +105,7 @@ def main():
     ##start client
    
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('127.0.0.1', port))
+    s.connect((host, port))
     msg_server = "sessionid(:)"+ssid+"\nstate(:)None\n"
     msg_server = str(len(msg_server)) + "\n" + msg_server
     s.send(msg_server.encode())
@@ -116,13 +116,14 @@ def main():
         request.printMessage()
         s.close()
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect(('127.0.0.1', port))
+        s.connect((host, port))
         request.SendMessage(s)
         buffer = handleReq(s)
 
 
 buffersize = 1024
 port = 12346
+host = "10.0.0.1"
 atexit.register(exit_handler)
 path = "./test.txt"
 fd = open(path, "r")

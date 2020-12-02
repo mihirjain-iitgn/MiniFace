@@ -179,7 +179,7 @@ class Handle:
                                 self.Fields_Res["message"] += (str(i+1) + ". "+ str(unreadchats[i][0]) + " (" +str(unreadchats[i][1]) + ")\t")
                             n = len(unreadchats)
                             for j in range(len(readchats)):
-                                self.Fields_Res["message"] += (str(n+1+j) + ". "+ str(readchats[i]) + "\t")
+                                self.Fields_Res["message"] += (str(n+1+j) + ". "+ str(readchats[j]) + "\t")
 
                             self.Fields_Res["message"] += "Action\t1.Open\t2.Delete\t3.Back to profile"
                         elif (self.Fields_Req["request"]=="5"):
