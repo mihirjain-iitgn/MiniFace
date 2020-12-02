@@ -195,6 +195,22 @@ def myNetwork():
     net.get('s9').start([c0])
 
     info( '*** Post configure switches and hosts\n')
+    fd = open("checkmini.txt","w")
+    client = "python3 client.py &"
+    server = "python3 server.py &"
+    h1.cmd(server)
+    time.sleep(3)
+    print(h1.cmd(">"))
+    for i in range(1,len(net.hosts)):
+        net.hosts[i].cmd(client)
+    time.sleep(7)
+    for i in range(1,len(net.hosts)):
+        fd.write(str(i)+"\n")
+        print(i)
+        print(net.hosts[i].cmd(">"))
+        fd.write(net.hosts[i].cmd(">"))
+    fd.close()
+
 
     CLI(net)
     net.stop()
