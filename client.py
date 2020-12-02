@@ -2,8 +2,20 @@ import socket
 import stdiomask
 import os
 import sys
+import atexit
 
-def prYellow(skk): print("\033[93m {}\033[00m" .format(skk),":", end="") 
+def prYellow(skk): print("\033[93m {}\033[00m" .format(skk),":", end="")
+
+def exit_handler():
+    if (ssid!="None"):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(('127.0.0.1', port))
+        msg_server = "sessionid(:)"+ssid+"\nstate(:)offline\n"
+        msg_server = str(len(msg_server)) + "\n" + msg_server
+        s.send(msg_server.encode())
+        fd = open(path, "w")
+        fd.write(ssid)
+        fd.close()
 
 class Handle:
     def __init__(self,message):
@@ -91,7 +103,7 @@ def handleReq(s):
 
 def main():
     ##start client
-    port = 12346
+   
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(('127.0.0.1', port))
     msg_server = "sessionid(:)"+ssid+"\nstate(:)None\n"
@@ -110,17 +122,11 @@ def main():
 
 
 buffersize = 1024
+port = 12346
+atexit.register(exit_handler)
 path = "./test.txt"
 fd = open(path, "r")
-
 ssid = fd.readline()
-
+ssid = "None"
 fd.close()
-
-try:
-    main()
-except KeyboardInterrupt:
-    fd = open(path, "w")
-    fd.write(ssid)
-    fd.close()
-    sys.exit(1)
+main()

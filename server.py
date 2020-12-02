@@ -190,10 +190,8 @@ class Handle:
                             friends.extend(friends_details("P2","P1",username,"1"))
                             friends.extend(friends_details("P1","P2",username,"1"))
                             friends = set(friends)
-                            # print(friends)
                             friends_online = online.intersection(friends)
                             friends_online = list(friends_online)
-                            # print(friends_online)
                             temp = ""
                             for i in range(len(friends_online)):
                                 temp += str(i+1) + ". " + friends_online[i] + "\t"
@@ -208,7 +206,7 @@ class Handle:
                             user = self.getUsername(ssid)
                             self.Fields_Res["sessionid"] = "SetNone"
                             self.Fields_Res["state"] = "acesspage"
-                            update_details(user,ssid,"0")
+                            update_details(user,"None","0")
                             self.Fields_Res["message"] = "1:SignIn\t2:SignUp"
                         else:
                             self.Fields_Res["state"] = "profile@self"
@@ -529,6 +527,11 @@ class Handle:
                     prof = self.Fields_Req["state"].split("@")[1]
                     self.Fields_Res["state"] = "profile@" + prof
                     self.profile_other(fetch_details(prof))
+                
+                elif (self.Fields_Req["state"]=="offline"):
+                    user = self.getUsername(self.Fields_Req["sessionid"])
+                    ssid = self.Fields_Req["sessionid"]
+                    update_details(user,ssid,"0")
 
 
     def SendMessage(self):
@@ -540,7 +543,6 @@ class Handle:
                 msg_client += (key + "(:)" + val + "\n")
         size = len(msg_client)
         msg_client = str(size) + "\n" + msg_client
-        # print(msg_client)
         self.client.send(msg_client.encode())
 
 def handleReq(client):
@@ -568,8 +570,8 @@ def main():
 
     while True:
         try:
-            client, addr = sock.accept()
-            Thread = threading.Thread(target=handleReq, args=(client,))
+            client = sock.accept()
+            Thread = threading.Thread(target=handleReq, args=(client[0],))
             Thread.start()
         except:
             sock.close()

@@ -73,8 +73,6 @@ def save_details(table,details):
     val = val[:len(val)-1]
     val+=");"
     sql_command = "INSERT INTO "+ table +" VALUES " + val
-    # print(sql_command)
-    # print(details)
     crsr.execute(sql_command, tuple(details)) 
 
     connection.commit() 
@@ -112,7 +110,6 @@ def online_users():
         ans[i] = list(ans[i])
         ans[i] = ans[i][0]
     connection.close()
-    print(ans)
     return ans
 
 def fetch_details(name):
@@ -127,7 +124,6 @@ def fetch_details(name):
     if(ans!=None):
         ans = list(ans)
         # ans = ans[:len(ans)-2]
-    # print(ans)
     connection.close()
     return ans
 
@@ -166,7 +162,6 @@ def profile_details(ssid):
     ssid = "'" + ssid + "'" 
     connection = sqlite3.connect(DEFAULT_PATH)
     crsr = connection.cursor() 
-    # print(ssid)
     cmd = "SELECT * FROM user_details WHERE sessionid=" + ssid 
     crsr.execute(cmd) 
     ans = crsr.fetchone()
@@ -174,7 +169,6 @@ def profile_details(ssid):
         ans = list(ans)
         ans.pop(1)
         ans = ans[:len(ans)-2]
-    # print(ans)
     connection.close()
     return ans
 
@@ -305,14 +299,3 @@ if isfile(DEFAULT_PATH)==False:
     friends_table()
     posts_table()
     message_table()
-
-# save_details("user_details",["Priy","kavjk","M","may","2790y08","1"])
-# save_details("friends",["mihir","priyam","0"])
-# print(friends_details("P1","P2","priyam","0"))
-# update_details("Priy","nvaknajjb","0")
-# print(fetch_chats("mihir"))
-# profile_details("Priy")
-# [('save this is last for the day',), ('good morning priyam',)]
-# save_details("messages",["priy","profit","0","0","tame","0","msg"])
-# print(fetch_unreadchats("a"))
-# print(getMessages("a","mihir"))
