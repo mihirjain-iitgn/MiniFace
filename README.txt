@@ -1,12 +1,9 @@
 Depedecies
 	Server :
-
 		python 3.x
 
 	Client :
-
 		python 3.x
-
 		stdiomask : It can be installed with pip3 install stdiomask or pip install stdiomask depending on how the path varibles in the ystem.
 
 
