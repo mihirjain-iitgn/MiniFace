@@ -110,18 +110,17 @@ def main():
 
 
 buffersize = 1024
-# path = "./test.txt"
-# fd = open(path, "r")
+path = "./test.txt"
+fd = open(path, "r")
 
-# ssid = fd.readline()
+ssid = fd.readline()
 
-# fd.close()
-ssid  = "None"
+fd.close()
 
 try:
     main()
 except KeyboardInterrupt:
-    # fd = open(path, "w")
-    # fd.write(ssid)
-    # fd.close()
+    fd = open(path, "w")
+    fd.write(ssid)
+    fd.close()
     sys.exit(1)

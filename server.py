@@ -165,15 +165,21 @@ class Handle:
                             self.Fields_Res["message"] = ""
                             self.Fields_Res["form"] = "Username$Action"
                             self.Fields_Res["state"] = "formmessage"
-                            readchats = fetch_readchats(self.getUsername(self.Fields_Req['sessionid']))
-                            unreadchats = fetch_unreadchats(self.getUsername(self.Fields_Req['sessionid']))
-                            print(readchats)
-                            print(unreadchats)
+                            user = self.getUsername(self.Fields_Req['sessionid'])
+                            readchats = fetch_readchats("P1",user)
+                            readchats.extend(fetch_readchats("P2",user))
+                            unreadchats = fetch_unreadchats(user)
+                            temp = set(readchats)
+                            for i in unreadchats:
+                                if i[0] in temp:
+                                    temp.remove(i[0])
+                            readchats = list(temp)
+                            
                             for i in range(len(unreadchats)):
                                 self.Fields_Res["message"] += (str(i+1) + ". "+ str(unreadchats[i][0]) + " (" +str(unreadchats[i][1]) + ")\t")
-
-                            for i in range(len(readchats)):
-                                self.Fields_Res["message"] += (str(i+1) + ". "+ str(readchats[i]) + "\t")
+                            n = len(unreadchats)
+                            for j in range(len(readchats)):
+                                self.Fields_Res["message"] += (str(n+1+j) + ". "+ str(readchats[i]) + "\t")
 
                             self.Fields_Res["message"] += "Action\t1.Open\t2.Delete\t3.Back to profile"
                         elif (self.Fields_Req["request"]=="5"):
@@ -189,8 +195,8 @@ class Handle:
                             friends_online = list(friends_online)
                             # print(friends_online)
                             temp = ""
-                            for i in friends_online:
-                                temp += i + "\t"
+                            for i in range(len(friends_online)):
+                                temp += str(i+1) + ". " + friends_online[i] + "\t"
                             self.Fields_Res["message"] = temp
                             self.Fields_Res["message"] += "Action:\t0.Back to Profile\t1.Message"
                             self.Fields_Res["form"] = "Username$Action"
@@ -280,6 +286,7 @@ class Handle:
                     if (des=="1"):
                         ##List Message
                         user = self.getUsername(self.Fields_Req["sessionid"])
+                        update_chat(prof, user,"status","0")
                         messages = getMessages(user, prof)
                         for i in messages:
                             i = list(i)
@@ -299,10 +306,11 @@ class Handle:
                     else:
                         ##Add New Message
                         user = self.getUsername(self.Fields_Req["sessionid"])
-                        action = self.Fields_Req["form"][0]
+                        action = self.Fields_Req["form"][1]
                         if (action=="1"):
-                            message = self.Fields_Req["form"][1]
+                            message = self.Fields_Req["form"][0]
                             user = self.getUsername(self.Fields_Req["sessionid"])
+                            update_chat(prof, user,"status","0")
                             tame = datetime.datetime.now()
                             tame = str(tame.strftime("%b %d %Y %H:%M:%S"))
                             data = [user, prof, "1", "1", tame, "1", message]

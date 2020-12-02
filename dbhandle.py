@@ -265,16 +265,24 @@ def fetch_unreadchats(user):
     connection.close()
     return ans
 
-def fetch_readchats(user):
+def fetch_readchats(P, user):
     user = "'" + user + "'"
     connection = sqlite3.connect(DEFAULT_PATH)
-    crsr = connection.cursor() 
-    cmd = "SELECT P1 FROM messages WHERE status='1' AND f2='1' AND P2=" + user
+    crsr = connection.cursor()
+    if P=="P1":
+        flag = "f2"
+        p2 = "P2"
+    else:
+        flag = "f1" 
+        p2 = "P1"
+    cmd = "SELECT " + P + " FROM messages WHERE status='0' AND " + flag + "='1' AND "+ p2 + "=" + user
     crsr.execute(cmd) 
 
     # store all the fetched data in the ans variable 
     ans = crsr.fetchall()
     connection.close()
+    for i in range(len(ans)):
+        ans[i] = ans[i][0]
     ans = list(set(ans))
     return ans
 
