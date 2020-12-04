@@ -79,11 +79,11 @@ def myNetwork():
    
 
    
-    h1.cmd("python ts_thread.py &")
-    h2.cmd("python tc.py 1 &")
-    h5.cmd("python tc.py 2 &")
-    h7.cmd("python tc.py 3 &")
-    h9.cmd("python tc.py 4 &")
+    h1.cmd("python server.py &")
+    h2.cmd("python client.py &")
+    h5.cmd("python client.py &")
+    h7.cmd("python client.py &")
+    h9.cmd("python client.py &")
     time.sleep(10)
     
     #print(h1.cmd(">"))
