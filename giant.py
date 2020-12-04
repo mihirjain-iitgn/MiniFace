@@ -9,7 +9,6 @@ from mininet.cli import CLI
 from mininet.log import setLogLevel, info
 from mininet.link import TCLink, Intf
 from subprocess import call
-import time
 
 def myNetwork():
 
@@ -196,17 +195,7 @@ def myNetwork():
     net.get('s9').start([c0])
 
     info( '*** Post configure switches and hosts\n')
-    
-    h1.cmd("python3 server.py &")
-    h2.cmd("python3 client.py 1 &")
-    h3.cmd("python3 client.py 2 &")
-    h4.cmd("python3 client.py 3 &")
-    h5.cmd("python3 client.py 4 &")
-    time.sleep(10)
-    print(h2.cmd(">"))
-    print(h3.cmd(">"))
-    print(h4.cmd(">"))
-    print(h5.cmd(">"))
+
     CLI(net)
     net.stop()
 
