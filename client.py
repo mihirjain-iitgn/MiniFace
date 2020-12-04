@@ -124,7 +124,7 @@ def main():
 
 buffersize = 1024
 port = 12345
-host = "127.0.0.1"
+host = "10.0.0.1"
 atexit.register(exit_handler)
 path = "./test.txt"
 fd = open(path, "r")
