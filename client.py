@@ -3,6 +3,7 @@ import stdiomask
 import os
 import sys
 import atexit
+import time
 
 def prYellow(skk): print("\033[93m {}\033[00m" .format(skk),":", end="")
 
