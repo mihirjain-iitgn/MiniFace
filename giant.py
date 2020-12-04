@@ -197,7 +197,7 @@ def myNetwork():
 
     info( '*** Post configure switches and hosts\n')
     
-    h1.cmd("python3 sever.py &")
+    h1.cmd("python3 server.py &")
     h2.cmd("python3 client.py 1 &")
     h3.cmd("python3 client.py 2 &")
     h4.cmd("python3 client.py 3 &")
